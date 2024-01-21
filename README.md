@@ -1,6 +1,12 @@
 # Hardware calc macro written in verilog
 
 These are 16-bit arithmetic circuits in various formats.  
+
+License
+========================================
+
+Apache License (Version 2.0)  
+<http://www.apache.org/licenses/LICENSE-2.0>  
   
 ## Arithmetic type  
 
@@ -18,5 +24,6 @@ These are 16-bit arithmetic circuits in various formats.
 
 Update history
 ========================================
+
 2024/01/20: Development start.  
-2024/01/22: First commit.  
+2024/01/22: First commit, Add lisence.  
