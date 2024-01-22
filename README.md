@@ -20,10 +20,12 @@ Apache License (Version 2.0)
 
 - int16
 - fix16
-- bf16(TBA)
+- bf16(Implemented Add, Sub Mul)  
+  Not yet verified
 
 Update history
 ========================================
 
 2024/01/20: Development start.  
 2024/01/22: First commit, Add lisence.  
+2024/01/23: Implemented BFloat16 Adder, Subtractor, Multiplier.  
