@@ -220,7 +220,7 @@ module BFMul (
 			32'h00xx_00xx: exception = 2'b01;	// zero
 			32'h00xx_ff00: exception = 2'b11;	// NaN
 			32'h00xx_ffxx: exception = 2'b11;	// NaN
-			32'h00xx_xxxx: exception = 2'b01;	// Number
+			32'h00xx_xxxx: exception = 2'b01;	// zero
 			32'hFF00_00xx: exception = 2'b11;
 			32'hFF00_FF00: exception = 2'b10;
 			32'hFF00_FFxx: exception = 2'b11;
@@ -257,4 +257,50 @@ module BFDiv (
 	output		[15:0]	out
 );
 	
+	// divide
+	wire			w_sg		= a[15] ^ b[15];
+	wire	[17:0]	w_div_fr	= ( {1'b1, a[6:0]} << 10 ) / {1'b1, b[6:0]};
+	wire	[8:0]	w_ex_tmp	= a[14:7] - b[14:7] + 'd127 - !w_div_fr[10];
+
+	// normalize
+	wire	[10:0]	w_norm_fr	= (w_div_fr[9]) ? {w_div_fr[9:0], 1'b1} : {w_div_fr[8:0], 2'b11};
+
+	// round
+	wire	least, guard, round, stiky;
+	assign	{least, guard, round, stiky} = {w_norm_fr[3], w_norm_fr[2], w_norm_fr[1], w_norm_fr[0]};
+	wire	[7:0]	w_round_fr = w_norm_fr[9:3] + (guard & (least | round | stiky));
+
+	// exception
+	function [0:0] exception;
+	input	[7:0]	ex_l, ex_s;
+	input	[6:0]	fr_l, fr_s;
+	begin
+		casex ( {ex_l,1'b0,fr_l,   ex_s,1'b0,fr_s} )
+			32'h00xx_00xx: exception = 2'b11;	// NaN
+			32'h00xx_ff00: exception = 2'b01;	// zero
+			32'h00xx_ffxx: exception = 2'b11;	// NaN
+			32'h00xx_xxxx: exception = 2'b01;	// zero
+			32'hFF00_00xx: exception = 2'b10;	// inf
+			32'hFF00_FFxx: exception = 2'b11;	// NaN
+			32'hFF00_xxxx: exception = 2'b10;	// inf
+			32'hFFxx_xxxx: exception = 2'b11;
+			32'hxxxx_0000: exception = 2'b10;
+			32'hxxxx_FF00: exception = 2'b01;
+			32'hxxxx_FFxx: exception = 2'b11;
+			32'hxxxx_xxxx: exception = 2'b00;
+			default: exception = 2'b11;
+		endcase
+	end
+	endfunction
+
+	wire	[1:0]	w_exc		= exception(a[14:7], a[6:0], b[14:7], b[6:0]);
+	wire	[7:0]	w_exc_ex	= (w_exc == 2'b00) ?	w_ex_tmp[7:0]
+								: (w_exc == 2'b01) ?	8'h00 
+								:						8'hFF;
+	wire	[6:0]	w_exc_fr	= (w_exc == 2'b00) ?	w_round_fr
+								: (w_exc == 2'b11) ?	7'h40 
+								:						8'h00;
+	wire			w_exc_sg	= w_sg;
+
+	assign	out = {w_exc_sg, w_exc_ex, w_exc_fr};
 endmodule
