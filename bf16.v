@@ -86,7 +86,7 @@ module BFAdd (
 								:						8'hFF;
 	wire	[6:0]	w_exc_fr	= (w_exc == 2'b00) ?	w_round_fr
 								: (w_exc == 2'b11) ?	7'h40 
-								:						8'h00;
+								:						7'h00;
 	wire			w_exc_sg	= w_sg_l;
 
 	assign	out = {w_exc_sg, w_exc_ex, w_exc_fr};
@@ -182,7 +182,7 @@ module BFSub (
 								:						8'hFF;
 	wire	[6:0]	w_exc_fr	= (w_exc == 2'b00) ?	w_round_fr
 								: (w_exc == 2'b11) ?	7'h40 
-								:						8'h00;
+								:						7'h00;
 	wire			w_exc_sg	= w_sg_l;
 
 	assign	out = {w_exc_sg, w_exc_ex, w_exc_fr};
@@ -236,12 +236,12 @@ module BFMul (
 	endfunction
 
 	wire	[1:0]	w_exc		= exception(a[14:7], a[6:0], b[14:7], b[6:0]);
-	wire	[7:0]	w_exc_ex	= (w_exc == 2'b00) ?	w_ex_tmp[7:0]
+	wire	[7:0]	w_exc_ex	= (w_exc == 2'b00) ?	(w_ex_tmp[8])?	8'h00	:	w_ex_tmp[7:0]
 								: (w_exc == 2'b01) ?	8'h00 
 								:						8'hFF;
-	wire	[6:0]	w_exc_fr	= (w_exc == 2'b00) ?	w_round_fr
+	wire	[6:0]	w_exc_fr	= (w_exc == 2'b00) ?	(w_ex_tmp[8])?	7'h00	:	w_round_fr
 								: (w_exc == 2'b11) ?	7'h40 
-								:						8'h00;
+								:						7'h00;
 	wire			w_exc_sg	= w_sg;
 
 	assign	out = {w_exc_sg, w_exc_ex, w_exc_fr};
@@ -294,12 +294,12 @@ module BFDiv (
 	endfunction
 
 	wire	[1:0]	w_exc		= exception(a[14:7], a[6:0], b[14:7], b[6:0]);
-	wire	[7:0]	w_exc_ex	= (w_exc == 2'b00) ?	w_ex_tmp[7:0]
+	wire	[7:0]	w_exc_ex	= (w_exc == 2'b00) ?	(w_ex_tmp[8])?	8'h00	:	w_ex_tmp[7:0]
 								: (w_exc == 2'b01) ?	8'h00 
 								:						8'hFF;
-	wire	[6:0]	w_exc_fr	= (w_exc == 2'b00) ?	w_round_fr
+	wire	[6:0]	w_exc_fr	= (w_exc == 2'b00) ?	(w_ex_tmp[8])?	7'h00	:	w_round_fr
 								: (w_exc == 2'b11) ?	7'h40 
-								:						8'h00;
+								:						7'h00;
 	wire			w_exc_sg	= w_sg;
 
 	assign	out = {w_exc_sg, w_exc_ex, w_exc_fr};
