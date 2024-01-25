@@ -27,6 +27,6 @@ Update history
 
 2024/01/20: Development start.  
 2024/01/22: First commit, Add lisence.  
-2024/01/23: Implemented BFloat16 Adder, Subtractor, Multiplier.  
+2024/01/23: Implemented Bfloat16 Adder, Subtractor, Multiplier.  
 2024/01/24: Implemented Bfloat16 Divider.  
 2024/01/25: Implemented underflow control in Bfloat16.  
