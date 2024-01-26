@@ -18,9 +18,9 @@ Apache License (Version 2.0)
 
 ## Implement Format  
 
-- int16
-- fix16
-- bf16 (Not yet verified)  
+- int16  
+- fix16  
+- bf16  
 
 Update history
 ========================================
@@ -30,3 +30,4 @@ Update history
 2024/01/23: Implemented Bfloat16 Adder, Subtractor, Multiplier.  
 2024/01/24: Implemented Bfloat16 Divider.  
 2024/01/25: Implemented underflow control in Bfloat16.  
+2024/01/27: Verificated Bfloat16 macro.  

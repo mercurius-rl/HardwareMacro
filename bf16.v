@@ -13,7 +13,7 @@ module BFAdd (
 	wire	comp = (a[14:0] > b[14:0]);
 
 	assign	{w_sg_l, w_ex_l, w_fr_l} = ( comp) ? a : b;
-	assign	{w_sg_s, w_ex_s, w_fr_s} = (!comp) ? b : a;
+	assign	{w_sg_s, w_ex_s, w_fr_s} = (!comp) ? a : b;
 
 	wire	[7:0]	w_fr_l1, w_fr_s1;
 	assign	w_fr_l1 = {1'b1, w_fr_l};
@@ -22,7 +22,7 @@ module BFAdd (
 	// shift
 	wire	[7:0]	w_sh, w_rem;
 	wire	[7:0]	w_ex_sub = w_ex_l - w_ex_s;
-	assign	{w_sh, w_rem} = (w_ex_sub >= 8'd10) ? {8'h0, w_fr_s1} : {w_fr_s1, 8'h0} >> w_ex_sub;
+	assign	{w_sh, w_rem} = (w_ex_sub >= 8'd10) ? {10'h0, w_fr_s1[7:2]} : {w_fr_s1, 8'h0} >> w_ex_sub;
 	
 	// fract calc
 	wire			w_xnor = w_sg_l ~^ w_sg_s;
@@ -47,8 +47,8 @@ module BFAdd (
 
 	wire	[2:0]	w_sh_count = shc(w_fr_res[7:0]);
 
-	wire	[6:0]	w_norm_fr = (w_xnor) ? w_fr_res >> w_fr_res[8] : w_fr_res << w_sh_count;
-	wire	[7:0]	w_norm_ex = (w_xnor) ? w_ex_l + w_fr_res[8] : w_ex_l - w_sh_count;
+	wire	[6:0]	w_norm_fr = (w_xnor) ? (w_fr_res >> w_fr_res[8]) : (w_fr_res << w_sh_count);
+	wire	[7:0]	w_norm_ex = (w_xnor) ? (w_ex_l + w_fr_res[8]) : (w_ex_l - w_sh_count);
 
 	// round
 	wire	guard, round, stiky;
@@ -57,7 +57,7 @@ module BFAdd (
 	wire	[6:0]	w_round_fr = w_norm_fr + (guard & (round | stiky | w_norm_fr[0]));
 
 	// exception
-	function [0:0] exception;
+	function [1:0] exception;
 	input	[7:0]	ex_l, ex_s;
 	input	[6:0]	fr_l, fr_s;
 	begin
@@ -109,7 +109,7 @@ module BFSub (
 	wire	[15:0]	neg_b = {~b[15],b[14:0]};
 
 	assign	{w_sg_l, w_ex_l, w_fr_l} = ( comp) ? a : neg_b;
-	assign	{w_sg_s, w_ex_s, w_fr_s} = (!comp) ? neg_b : a;
+	assign	{w_sg_s, w_ex_s, w_fr_s} = (!comp) ? a : neg_b;
 
 	wire	[7:0]	w_fr_l1, w_fr_s1;
 	assign	w_fr_l1 = {1'b1, w_fr_l};
@@ -118,7 +118,7 @@ module BFSub (
 	// shift
 	wire	[7:0]	w_sh, w_rem;
 	wire	[7:0]	w_ex_sub = w_ex_l - w_ex_s;
-	assign	{w_sh, w_rem} = (w_ex_sub >= 8'd10) ? {8'h0, w_fr_s1} : {w_fr_s1, 8'h0} >> w_ex_sub;
+	assign	{w_sh, w_rem} = (w_ex_sub >= 8'd10) ? {10'h0, w_fr_s1[7:2]} : {w_fr_s1, 8'h0} >> w_ex_sub;
 	
 	// fract calc
 	wire			w_xnor = w_sg_l ~^ w_sg_s;
@@ -143,8 +143,8 @@ module BFSub (
 
 	wire	[2:0]	w_sh_count = shc(w_fr_res[7:0]);
 
-	wire	[6:0]	w_norm_fr = (w_xnor) ? w_fr_res >> w_fr_res[8] : w_fr_res << w_sh_count;
-	wire	[7:0]	w_norm_ex = (w_xnor) ? w_ex_l + w_fr_res[8] : w_ex_l - w_sh_count;
+	wire	[6:0]	w_norm_fr = (w_xnor) ? (w_fr_res >> w_fr_res[8]) : (w_fr_res << w_sh_count);
+	wire	[7:0]	w_norm_ex = (w_xnor) ? (w_ex_l + w_fr_res[8]) : (w_ex_l - w_sh_count);
 
 	// round
 	wire	guard, round, stiky;
@@ -153,7 +153,7 @@ module BFSub (
 	wire	[6:0]	w_round_fr = w_norm_fr + (guard & (round | stiky | w_norm_fr[0]));
 
 	// exception
-	function [0:0] exception;
+	function [1:0] exception;
 	input	[7:0]	ex_l, ex_s;
 	input	[6:0]	fr_l, fr_s;
 	begin
@@ -236,7 +236,7 @@ module BFMul (
 	endfunction
 
 	wire	[1:0]	w_exc		= exception(a[14:7], a[6:0], b[14:7], b[6:0]);
-	wire	[7:0]	w_exc_ex	= (w_exc == 2'b00) ?	(w_ex_tmp[8])?	8'h00	:	w_ex_tmp[7:0]
+	wire	[7:0]	w_exc_ex	= (w_exc == 2'b00) ?	(w_ex_tmp[8])?	(w_ex_tmp[7])?	8'h00	:	8'hFF	:	w_ex_tmp[7:0]
 								: (w_exc == 2'b01) ?	8'h00 
 								:						8'hFF;
 	wire	[6:0]	w_exc_fr	= (w_exc == 2'b00) ?	(w_ex_tmp[8])?	7'h00	:	w_round_fr
@@ -259,7 +259,7 @@ module BFDiv (
 	
 	// divide
 	wire			w_sg		= a[15] ^ b[15];
-	wire	[17:0]	w_div_fr	= ( {1'b1, a[6:0]} << 10 ) / {1'b1, b[6:0]};
+	wire	[17:0]	w_div_fr	= ( {1'b1, a[6:0]} << 9 ) / {1'b1, b[6:0]};
 	wire	[8:0]	w_ex_tmp	= a[14:7] - b[14:7] + 'd127 - !w_div_fr[10];
 
 	// normalize
@@ -294,7 +294,7 @@ module BFDiv (
 	endfunction
 
 	wire	[1:0]	w_exc		= exception(a[14:7], a[6:0], b[14:7], b[6:0]);
-	wire	[7:0]	w_exc_ex	= (w_exc == 2'b00) ?	(w_ex_tmp[8])?	8'h00	:	w_ex_tmp[7:0]
+	wire	[7:0]	w_exc_ex	= (w_exc == 2'b00) ?	(w_ex_tmp[8])?	(w_ex_tmp[7])?	8'h00	:	8'hFF	:	w_ex_tmp[7:0]
 								: (w_exc == 2'b01) ?	8'h00 
 								:						8'hFF;
 	wire	[6:0]	w_exc_fr	= (w_exc == 2'b00) ?	(w_ex_tmp[8])?	7'h00	:	w_round_fr
