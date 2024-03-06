@@ -222,7 +222,7 @@ module BFMul (
 			32'h00xx_ffxx: exception = 2'b11;	// NaN
 			32'h00xx_xxxx: exception = 2'b01;	// zero
 			32'hFF00_00xx: exception = 2'b11;
-			32'hFF00_FF00: exception = 2'b10;
+			32'hFF00_FF00: exception = 2'b10;	// inf
 			32'hFF00_FFxx: exception = 2'b11;
 			32'hFF00_xxxx: exception = 2'b10;
 			32'hFFxx_xxxx: exception = 2'b11;
@@ -235,14 +235,14 @@ module BFMul (
 	end
 	endfunction
 
-	wire	[1:0]	w_exc		= exception(a[14:7], a[6:0], b[14:7], b[6:0]);
+	wire	[1:0]	w_exc		= exception(a[14:7], b[14:7], a[6:0], b[6:0]);
 	wire	[7:0]	w_exc_ex	= (w_exc == 2'b00) ?	(w_ex_tmp[8])?	(w_ex_tmp[7])?	8'h00	:	8'hFF	:	w_ex_tmp[7:0]
 								: (w_exc == 2'b01) ?	8'h00 
 								:						8'hFF;
-	wire	[6:0]	w_exc_fr	= (w_exc == 2'b00) ?	(w_ex_tmp[8])?	7'h00	:	w_round_fr
+	wire	[6:0]	w_exc_fr	= (w_exc == 2'b00) ?	(w_ex_tmp[8] || w_exc_ex == 8'hFF || w_exc_ex == 8'h00)?	7'h00	:	w_round_fr
 								: (w_exc == 2'b11) ?	7'h40 
 								:						7'h00;
-	wire			w_exc_sg	= w_sg;
+	wire			w_exc_sg	= ({w_exc_ex, w_exc_fr} == 14'b0) ?	1'b0	:	w_sg;
 
 	assign	out = {w_exc_sg, w_exc_ex, w_exc_fr};
 
@@ -293,11 +293,11 @@ module BFDiv (
 	end
 	endfunction
 
-	wire	[1:0]	w_exc		= exception(a[14:7], a[6:0], b[14:7], b[6:0]);
+	wire	[1:0]	w_exc		= exception(a[14:7], b[14:7], a[6:0], b[6:0]);
 	wire	[7:0]	w_exc_ex	= (w_exc == 2'b00) ?	(w_ex_tmp[8])?	(w_ex_tmp[7])?	8'h00	:	8'hFF	:	w_ex_tmp[7:0]
 								: (w_exc == 2'b01) ?	8'h00 
 								:						8'hFF;
-	wire	[6:0]	w_exc_fr	= (w_exc == 2'b00) ?	(w_ex_tmp[8])?	7'h00	:	w_round_fr
+	wire	[6:0]	w_exc_fr	= (w_exc == 2'b00) ?	(w_ex_tmp[8] || w_exc_ex == 8'hFF || w_exc_ex == 8'h00)?	7'h00	:	w_round_fr
 								: (w_exc == 2'b11) ?	7'h40 
 								:						7'h00;
 	wire			w_exc_sg	= w_sg;
