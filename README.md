@@ -31,3 +31,4 @@ Update history
 2024/01/24: Implemented Bfloat16 Divider.  
 2024/01/25: Implemented underflow control in Bfloat16.  
 2024/01/27: Verificated Bfloat16 macro.  
+2024/03/07: Fix exception detect of Mul/Div Bfloat16.  
